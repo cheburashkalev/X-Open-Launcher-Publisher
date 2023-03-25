@@ -1,0 +1,17 @@
+﻿@page "/"
+@inject NavigationManager NavigationManager;
+
+
+<button class="btn btn-primary" @onclick="MakeNewPublish">
+    Make new Publish
+</button>
+@code 
+{
+    private async Task MakeNewPublish()
+    {
+        if (await FileDialog.SaveAndOpenPublishFile())
+        {
+            NavigationManager.NavigateTo("Publisher", false);
+        }
+    }
+}
