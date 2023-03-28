@@ -47,6 +47,7 @@
 
     <ItemGroup>
       <PackageReference Include="LiteDB" Version="5.0.16" />
+      <PackageReference Include="Toolbelt.Blazor.FileDropZone" Version="2.1.1" />
     </ItemGroup>
 
 </Project>

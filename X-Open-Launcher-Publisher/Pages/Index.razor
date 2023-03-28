@@ -11,6 +11,7 @@
     {
         if (await FileDialog.SaveAndOpenPublishFile())
         {
+            EditorPublisher.LoadInfo();
             NavigationManager.NavigateTo("Publisher", false);
         }
     }

@@ -19,5 +19,9 @@ public static class FileDialog
         }
         return false;
     }
+    public static async Task<FileResult> OpenImageFile()
+    {
+        return await FilePicker.PickAsync();
+    }
 }
 

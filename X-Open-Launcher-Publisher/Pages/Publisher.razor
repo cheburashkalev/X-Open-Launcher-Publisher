@@ -1,6 +1,71 @@
 ﻿@page "/Publisher"
+@using LiteDB;
+@inject NavigationManager NavigationManager;
 <h3>Publisher</h3>
+<button class="btn btn-primary" @onclick="Back">
+   {-- Back
+</button>
+<form @onsubmit="Submit" style="width:30%;">
+    <label>
+        Game Name
+    </label>
+    <input class="@modFormUser" @bind-value="EditorPublisher.infoClass.GameName" />
+    <label>
+        Discription
+    </label>
+    <input class="@modFormUser" @bind-value="EditorPublisher.infoClass.Discription" />
+    <label>
+        Media Url (Use symbol ';' for separate)
+     </label>
+    <input class="@modFormUser" @bind-value="EditorPublisher.infoClass.media" />
+    <label>
+        Tags (Use symbol ';' for separate)
+    </label>
+    <input class="@modFormUser" @bind-value="EditorPublisher.infoClass.tags" />
+</form>
 
+<div class="dropzone rounded" @onclick="UploadImage3_2">
+    @if (Image300_200!= null)
+    {
+        MemoryStream ms = new MemoryStream();
+        Image300_200.CopyTo(ms);
+        byte[] byteArray = ms.ToArray();
+        var b64String = Convert.ToBase64String(byteArray);
+        string image = "data:image/png;base64," + b64String;
+         <img src="@image">
+    }
+    else{
+        <div>
+        Upload Image 300x200
+        </div>
+    }
+</div>
 @code {
+    string modFormUser = "form-control modified invalid";
+    string dropClass;
+    ElementReference fileDropContainer;
+    LiteFileInfo<string> Image300_200 = EditorPublisher.InfoDB.GetStorage<string>("Images", "ImageCollection").FindById("$/300_200.image");
+    private async Task UploadImage3_2()
+    {
+        var FileResult = await FileDialog.OpenImageFile();
+        
+        if (FileResult.ContentType == "image/png")
+        {
+            // Gets a FileStorage with the default collections
+            var fs = EditorPublisher.InfoDB.GetStorage<string>("Images", "ImageCollection");
+            // Upload a file from a Stream
 
+            var Image300_200L = fs.Upload($"$/300_200.image", FileResult.FullPath);
+            Image300_200 = Image300_200L;
+            StateHasChanged();
+        }
+    }
+    async Task Submit()
+    {
+        await EditorPublisher.SaveInfo();
+    }
+    async Task Back()
+    {
+       NavigationManager.NavigateTo("", false);
+    }
 }
