@@ -1,5 +1,6 @@
 ﻿@page "/Publisher"
 @using LiteDB;
+@using Windows.Storage.Pickers;
 @inject NavigationManager NavigationManager;
 <h3>Publisher</h3>
 <button class="btn btn-primary" @onclick="Back">
@@ -50,6 +51,9 @@
         </div>
     }
 </div>
+<button class="btn btn-primary" @onclick="MakeGamePack">
+    Make GamePack
+</button>
 @code {
     string modFormUser = "form-control modified invalid";
     string dropClass;
@@ -58,7 +62,7 @@
     private async Task UploadImage3_2()
     {
         var FileResult = await FileDialog.OpenImageFile();
-        
+
         if (FileResult.ContentType == "image/png")
         {
             // Gets a FileStorage with the default collections
@@ -68,6 +72,18 @@
             Image300_200 = fs.Upload($"$/300_200.image", FileResult.FullPath);
         }
     }
+    async Task MakeGamePack()
+    {
+        var folderPicker = new FolderPicker();
+        var hwnd = ((MauiWinUIWindow)App.Current.Windows[0].Handler.PlatformView).WindowHandle;
+        
+        // Associate the HWND with the file picker
+        WinRT.Interop.InitializeWithWindow.Initialize(folderPicker, hwnd);
+        var result = await folderPicker.PickSingleFolderAsync();
+        GamePacker.WriteFolderToDb(result.Path);
+        GamePacker.SplitFile(GamePacker.GameDBPath, FileDialog.Path);
+    }
+
     async Task Back()
     {
        NavigationManager.NavigateTo("", false);
