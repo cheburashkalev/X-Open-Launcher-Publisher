@@ -15,6 +15,7 @@ public class InfoClass
     public string Tags { get; set; } =  " " ;
     public string DISCLAIMER_url { get; set; } = " " ;
 }
+
 public static class EditorPublisher
 {
     public static InfoClass infoClass { get; set; }
