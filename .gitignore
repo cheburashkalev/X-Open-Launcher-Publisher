@@ -11,6 +11,8 @@ templatesTest/
 *.rsuser
 *.suo
 *.user
+*.db
+*.dat
 *.userosscache
 *.sln.docstates
 
