@@ -1,7 +1,6 @@
 ﻿using LiteDB;
 
-namespace X_Open_Launcher_Publisher.Data
-{
+
     public class Test
     {
         public string A { get; set; }
@@ -78,4 +77,3 @@ namespace X_Open_Launcher_Publisher.Data
             }
         }
     }
-}
