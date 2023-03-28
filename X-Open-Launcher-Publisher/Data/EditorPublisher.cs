@@ -11,8 +11,8 @@ public class InfoClass
     public ObjectId UpdateID { get; set; } = ObjectId.NewObjectId();
     public string GameName { get; set; } = " ";
     public string Discription { get; set; } = " ";
-    public string media { get; set; } =  " " ;
-    public string tags { get; set; } =  " " ;
+    public string Media { get; set; } =  " " ;
+    public string Tags { get; set; } =  " " ;
     public string DISCLAIMER_url { get; set; } = " " ;
 }
 public static class EditorPublisher

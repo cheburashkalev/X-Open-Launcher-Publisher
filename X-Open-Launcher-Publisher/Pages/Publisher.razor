@@ -5,25 +5,35 @@
 <button class="btn btn-primary" @onclick="Back">
    {-- Back
 </button>
-<form @onsubmit="Submit" style="width:30%;">
-    <label>
-        Game Name
-    </label>
-    <input class="@modFormUser" @bind-value="EditorPublisher.infoClass.GameName" />
-    <label>
-        Discription
-    </label>
-    <input class="@modFormUser" @bind-value="EditorPublisher.infoClass.Discription" />
-    <label>
-        Media Url (Use symbol ';' for separate)
-     </label>
-    <input class="@modFormUser" @bind-value="EditorPublisher.infoClass.media" />
-    <label>
-        Tags (Use symbol ';' for separate)
-    </label>
-    <input class="@modFormUser" @bind-value="EditorPublisher.infoClass.tags" />
-</form>
+<div style="width:30%;">
 
+  <form @onsubmit="EditorPublisher.SaveInfo">
+    
+    <label for="GameName">Game Name:</label>
+    <input id="GameName" class="@modFormUser" @bind-value="EditorPublisher.infoClass.GameName" />
+  
+  </form>
+  
+  <form @onsubmit="EditorPublisher.SaveInfo">
+    <label for="Discription">Discription:</label>
+    <input id="Discription" class="@modFormUser" @bind-value="EditorPublisher.infoClass.Discription" />
+  </form>
+  
+  <form @onsubmit="EditorPublisher.SaveInfo">
+  
+   <label for="media">Media Url (Use symbol ';' for separate):</label>
+   <input id="media" class="@modFormUser" @bind-value="EditorPublisher.infoClass.Media" />
+  
+  </form>
+  
+  <form @onsubmit="EditorPublisher.SaveInfo">
+  
+   <label for="tags">Tags (Use symbol ';' for separate):</label>
+   <input id="tags" class="@modFormUser" @bind-value="EditorPublisher.infoClass.Tags" />
+  
+  </form>
+
+</div>
 <div class="dropzone rounded" @onclick="UploadImage3_2">
     @if (Image300_200!= null)
     {
@@ -32,7 +42,7 @@
         byte[] byteArray = ms.ToArray();
         var b64String = Convert.ToBase64String(byteArray);
         string image = "data:image/png;base64," + b64String;
-         <img src="@image">
+        <img src="@image">
     }
     else{
         <div>
@@ -55,14 +65,8 @@
             var fs = EditorPublisher.InfoDB.GetStorage<string>("Images", "ImageCollection");
             // Upload a file from a Stream
 
-            var Image300_200L = fs.Upload($"$/300_200.image", FileResult.FullPath);
-            Image300_200 = Image300_200L;
-            StateHasChanged();
+            Image300_200 = fs.Upload($"$/300_200.image", FileResult.FullPath);
         }
-    }
-    async Task Submit()
-    {
-        await EditorPublisher.SaveInfo();
     }
     async Task Back()
     {
