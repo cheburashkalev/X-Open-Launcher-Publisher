@@ -10,7 +10,7 @@ public static class GamePacker
 {
     public static string DataBaseName = "GameCash";
     public static string GameDBPath => Path.Combine(FileDialog.Path, $"{DataBaseName}DB.db");
-    public static readonly LiteDatabase GameDB = new LiteDatabase(GameDBPath);
+    public static LiteDatabase GameDB = new LiteDatabase(GameDBPath);
 
     public static void WriteFolderToDb(string folderPath) =>
         Directory.GetFiles(folderPath, "*", SearchOption.AllDirectories).ToList().ForEach(x =>
@@ -31,7 +31,7 @@ public static class GamePacker
         storage.SetMetadata(uploadedFile.Id, doc);
     }
 
-    public static void SplitFile(string sourceFile, string destinationDirectory, long chunkSize = 2L * 1024L * 1024L * 1024L)
+    public static void SplitFile(string sourceFile, string destinationDirectory, int chunkSize = System.Int32.MaxValue - 100)
     {
         using (FileStream sourceStream = new FileStream(sourceFile, FileMode.Open))
         {
