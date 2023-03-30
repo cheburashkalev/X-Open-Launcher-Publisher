@@ -12,12 +12,16 @@ public static class GamePacker
     public static string GameDBPath => Path.Combine(FileDialog.Path, $"{DataBaseName}DB.db");
     public static LiteDatabase GameDB = new LiteDatabase(GameDBPath);
 
-    public static void WriteFolderToDb(string folderPath) =>
-        Directory.GetFiles(folderPath, "*", SearchOption.AllDirectories).ToList().ForEach(x =>
+    public static void WriteFolderToDb(string folderPath)
+    {
+       var Files = Directory.GetFiles(folderPath, "*", SearchOption.AllDirectories).ToList();
+        int CountFiles = Files.Count;
+        Files.ForEach(x =>
         {
             string relativePath = Path.GetRelativePath(folderPath, x);
             WriteToDb(x, relativePath);
         });
+    }
 
     public static void WriteToDb(string filePath, string relativePath)
     {
@@ -37,7 +41,7 @@ public static class GamePacker
         {
             byte[] buffer = new byte[chunkSize];
             int bytesRead;
-
+            
             for (int i = 0; (bytesRead = sourceStream.Read(buffer, 0, buffer.Length)) > 0; i++)
             {
                 string destinationFile = Path.Combine(destinationDirectory, $"part_{i}.dat");
