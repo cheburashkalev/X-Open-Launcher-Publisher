@@ -39,13 +39,13 @@ public static class EditorPublisher
         if (cl.Exists(x => x.UpdateID == infoClass.UpdateID))
         {
             cl.Update(infoClass);
-            return;
         }
         else
         {
             cl.Insert(infoClass);
             cl.EnsureIndex(x => x.UpdateID);
         }
+        EditorPublisher.InfoDB.Checkpoint();
     }
 }
 

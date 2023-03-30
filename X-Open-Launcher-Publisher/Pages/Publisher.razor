@@ -70,6 +70,7 @@
             // Upload a file from a Stream
 
             Image300_200 = fs.Upload($"$/300_200.image", FileResult.FullPath);
+            EditorPublisher.InfoDB.Checkpoint();
         }
     }
     async Task MakeGamePack()

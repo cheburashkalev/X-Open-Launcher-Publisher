@@ -21,6 +21,7 @@ public static class GamePacker
             string relativePath = Path.GetRelativePath(folderPath, x);
             WriteToDb(x, relativePath);
         });
+        EditorPublisher.InfoDB.Checkpoint();
     }
 
     public static void WriteToDb(string filePath, string relativePath)
@@ -33,6 +34,7 @@ public static class GamePacker
                 { "relativePath", relativePath }
             };
         storage.SetMetadata(uploadedFile.Id, doc);
+        
     }
 
     public static void SplitFile(string sourceFile, string destinationDirectory, int chunkSize = System.Int32.MaxValue - 100)
