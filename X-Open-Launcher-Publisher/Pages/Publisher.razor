@@ -6,7 +6,7 @@
 <button class="btn btn-primary" @onclick="Back">
    {-- Back
 </button>
-<div style="width:30%;">
+<div style="width:30%;padding-top:15px">
 
   <form @onsubmit="EditorPublisher.SaveInfo">
     
@@ -51,14 +51,52 @@
         </div>
     }
 </div>
+<div class="dropzone rounded" @onclick="UploadImage21_9">
+    @if (Image1280_540 != null)
+    {
+        MemoryStream ms = new MemoryStream();
+        Image1280_540.CopyTo(ms);
+        byte[] byteArray = ms.ToArray();
+        var b64String = Convert.ToBase64String(byteArray);
+        string image = "data:image/png;base64," + b64String;
+        <img src="@image">
+    }
+    else
+    {
+        <div>
+            Upload Image 1280x540
+        </div>
+    }
+</div>
 <button class="btn btn-primary" @onclick="MakeGamePack">
     Make GamePack
 </button>
+<form @onsubmit="EditorPublisher.SaveInfo">
+
+    <label for="tags">Select the file to run:</label>
+    <input id="tags" class="@modFormUser" @bind-value="EditorPublisher.infoClass.Exe" />
+    <button class="btn btn-primary" @onclick="SaveRunFile">
+        Select the file to run
+    </button>
+</form>
 @code {
     string modFormUser = "form-control modified invalid";
     string dropClass;
     ElementReference fileDropContainer;
     LiteFileInfo<string> Image300_200 = EditorPublisher.InfoDB.GetStorage<string>("Images", "ImageCollection").FindById("$/300_200.image");
+    LiteFileInfo<string> Image1280_540 = EditorPublisher.InfoDB.GetStorage<string>("Images", "ImageCollection").FindById("$/1280_540.image");
+    private async Task SaveRunFile()
+    {
+        var FileResult = await FileDialog.OpenImageFile();
+        ILiteStorage<string> storage = GamePacker.GameDB.GetStorage<string>("GameFiles", "GameFileChunks");
+        string relativePath = storage.Find(x => FileResult.FullPath.EndsWith(x.Metadata["relativePath"].AsString)).FirstOrDefault().Metadata["relativePath"].AsString;
+        if (relativePath != "")
+        {
+            EditorPublisher.infoClass.Exe = relativePath;
+            await EditorPublisher.SaveInfo();
+            StateHasChanged();
+        }
+    }
     private async Task UploadImage3_2()
     {
         var FileResult = await FileDialog.OpenImageFile();
@@ -73,6 +111,20 @@
             EditorPublisher.InfoDB.Checkpoint();
         }
     }
+    private async Task UploadImage21_9()
+    {
+        var FileResult = await FileDialog.OpenImageFile();
+
+        if (FileResult.ContentType == "image/png")
+        {
+            // Gets a FileStorage with the default collections
+            var fs = EditorPublisher.InfoDB.GetStorage<string>("Images", "ImageCollection");
+            // Upload a file from a Stream
+
+            Image1280_540 = fs.Upload($"$/1280_540.image", FileResult.FullPath);
+            EditorPublisher.InfoDB.Checkpoint();
+        }
+    }
     async Task MakeGamePack()
     {
         var folderPicker = new FolderPicker();
@@ -82,6 +134,7 @@
         WinRT.Interop.InitializeWithWindow.Initialize(folderPicker, hwnd);
         var result = await folderPicker.PickSingleFolderAsync();
         GamePacker.WriteFolderToDb(result.Path);
+        GamePacker.GameDB.Checkpoint();
         GamePacker.GameDB.Dispose();
         GamePacker.SplitFile(GamePacker.GameDBPath, FileDialog.Path);
         GamePacker.GameDB = new LiteDatabase(GamePacker.GameDBPath);

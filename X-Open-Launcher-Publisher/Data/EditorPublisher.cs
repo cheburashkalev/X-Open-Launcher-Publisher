@@ -14,6 +14,7 @@ public class InfoClass
     public string Media { get; set; } =  " " ;
     public string Tags { get; set; } =  " " ;
     public string DISCLAIMER_url { get; set; } = " " ;
+    public string Exe { get; set; } = " " ;
 }
 
 public static class EditorPublisher
