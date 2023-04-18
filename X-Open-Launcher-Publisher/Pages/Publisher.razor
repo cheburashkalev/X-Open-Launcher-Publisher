@@ -1,6 +1,12 @@
 ﻿@page "/Publisher"
 @using LiteDB;
 @using Windows.Storage.Pickers;
+@using VCDiff.Decoders;
+@using VCDiff.Encoders;
+@using Windows.Storage;
+@using System.Security.Cryptography;
+@using System.Text;
+
 @inject NavigationManager NavigationManager;
 <h3>Publisher</h3>
 <button class="btn btn-primary" @onclick="Back">
@@ -79,12 +85,82 @@
         Select the file to run
     </button>
 </form>
+<form @onsubmit="EditorPublisher.SaveInfo">
+
+    <label for="tags">Make Patch</label>
+    <button class="btn btn-primary" @onclick="MakePatch">
+        Make Patch
+    </button>
+</form>
 @code {
     string modFormUser = "form-control modified invalid";
     string dropClass;
     ElementReference fileDropContainer;
     LiteFileInfo<string> Image300_200 = EditorPublisher.InfoDB.GetStorage<string>("Images", "ImageCollection").FindById("$/300_200.image");
     LiteFileInfo<string> Image1280_540 = EditorPublisher.InfoDB.GetStorage<string>("Images", "ImageCollection").FindById("$/1280_540.image");
+    private async Task MakePatch()
+    {
+        var folderPickerV1 = new FolderPicker();
+        folderPickerV1.CommitButtonText = "Select Old Version";
+        var hwnd = ((MauiWinUIWindow)App.Current.Windows[0].Handler.PlatformView).WindowHandle;
+        WinRT.Interop.InitializeWithWindow.Initialize(folderPickerV1, hwnd);
+        var resultV1 = await folderPickerV1.PickSingleFolderAsync();
+        var FilesV1 = Directory.GetFiles(resultV1.Path, "*", SearchOption.AllDirectories).ToList();
+
+
+        var folderPickerV2 = new FolderPicker();
+        folderPickerV2.CommitButtonText = "Select New Version";
+        WinRT.Interop.InitializeWithWindow.Initialize(folderPickerV2, hwnd);
+        var resultV2 = await folderPickerV2.PickSingleFolderAsync();
+        var FilesV2 = Directory.GetFiles(resultV2.Path, "*", SearchOption.AllDirectories).ToList();
+        bool one = true;
+        foreach (var OldFile in FilesV1) 
+        {
+            if (one)
+            {
+                try
+                {
+                    string relativePath = Path.GetRelativePath(resultV1.Path, OldFile);
+                    string NewFile = FilesV2.Find(x => x.EndsWith(relativePath));
+                    if (NewFile != null)
+                    {
+                        string id = Guid.NewGuid().ToString();
+                        MemoryStream memstr = new MemoryStream();
+                        ILiteStorage<string> storage = GamePacker.PatchDB.GetStorage<string>("GameFiles", "GameFileChunks");
+                        //var FileD = storage.Upload(id, OldFile);
+                        // storage.
+
+                        using var outStream = File.Create($"{ApplicationData.Current.TemporaryFolder.Path + "\\" + Path.GetFileName(OldFile)}.delta");
+                        var VcEnc = new VcEncoder(File.OpenRead(OldFile), File.OpenRead(NewFile), outStream);
+                        var res = VcEnc.Encode();
+                        outStream.Close();
+
+                        var FileD = storage.Upload(id, $"{ApplicationData.Current.TemporaryFolder.Path+ "\\"+ Path.GetFileName(OldFile)}.delta");
+                        storage.SetMetadata(id, new BsonDocument { { "relativePath", relativePath } });
+                        File.Delete($"{ApplicationData.Current.TemporaryFolder.Path + "\\" + Path.GetFileName(OldFile)}.delta");
+                        //var FileD = Writer.FileInfo;
+                        one = true;
+                    }
+                }
+                catch (Exception e)
+                {
+
+
+                }
+            }
+        }
+
+        /*
+        var FileResult = await FileDialog.OpenImageFile();
+        ILiteStorage<string> storage = GamePacker.GameDB.GetStorage<string>("GameFiles", "GameFileChunks");
+        string relativePath = storage.Find(x => FileResult.FullPath.EndsWith(x.Metadata["relativePath"].AsString)).FirstOrDefault().Metadata["relativePath"].AsString;
+        if (relativePath != "")
+            {
+            EditorPublisher.infoClass.Exe = relativePath;
+            await EditorPublisher.SaveInfo();
+            StateHasChanged();
+        }*/
+    }
     private async Task SaveRunFile()
     {
         var FileResult = await FileDialog.OpenImageFile();
@@ -135,6 +211,35 @@
         var result = await folderPicker.PickSingleFolderAsync();
         GamePacker.WriteFolderToDb(result.Path);
         GamePacker.GameDB.Checkpoint();
+        async Task<string> GetMD5(Stream stream)
+        {
+            using (var md5 = MD5.Create())
+            {
+                
+                    byte[] hash = md5.ComputeHash(stream);
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < hash.Length; i++)
+                    {
+                        sb.Append(hash[i].ToString("X2"));
+                    }
+                    return sb.ToString();
+                
+            }
+        }
+        using (StreamWriter writer = new StreamWriter(Path.Combine(FileDialog.Path, "manifest.txt")))
+        {
+
+            ILiteStorage<string> storage = GamePacker.GameDB.GetStorage<string>("GameFiles", "GameFileChunks");
+
+            foreach (var file in storage.FindAll())
+            {
+                string relativePath = file.Metadata["relativePath"].AsString; // Относительный путь
+                long fileSize = file.Length; // Размер файла
+                string md5Sum = await GetMD5(file.OpenRead()); // MD5 сумма
+
+                writer.WriteLine($"{relativePath}\t{fileSize}\t{md5Sum}");
+            }
+        }
         GamePacker.GameDB.Dispose();
         GamePacker.SplitFile(GamePacker.GameDBPath, FileDialog.Path);
         GamePacker.GameDB = new LiteDatabase(GamePacker.GameDBPath);

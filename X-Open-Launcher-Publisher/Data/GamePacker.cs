@@ -9,13 +9,16 @@ public class Test
 public static class GamePacker
 {
     public static string DataBaseName = "GameCash";
+    public static string DataBasePatchName = "GamePatch";
     public static string GameDBPath => Path.Combine(FileDialog.Path, $"{DataBaseName}DB.db");
+    public static string PatchDBPath => Path.Combine(FileDialog.Path, $"{DataBasePatchName}DB.db");
     public static LiteDatabase GameDB = new LiteDatabase(GameDBPath);
+    public static LiteDatabase PatchDB = new LiteDatabase(PatchDBPath);
 
     public static void WriteFolderToDb(string folderPath)
     {
        var Files = Directory.GetFiles(folderPath, "*", SearchOption.AllDirectories).ToList();
-        int CountFiles = Files.Count;
+        
         Files.ForEach(x =>
         {
             string relativePath = Path.GetRelativePath(folderPath, x);
